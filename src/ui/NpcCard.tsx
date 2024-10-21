@@ -1,6 +1,5 @@
-"use client"
 import Npc from "@/lib/types/Npc"
-import Dictaphone from "./Dictaphone"
+import Image from 'next/image'
 
 export const NpcCard = ({ npc }: {npc: Npc}) => {
 
@@ -10,7 +9,7 @@ export const NpcCard = ({ npc }: {npc: Npc}) => {
             <div className="max-w-xs mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
                 {/* <!-- Image --> */}
                 <div className="w-full h-48 bg-gray-200">
-                    <img className="object-cover w-full h-full" src={npc.picture} alt="Profile Picture" />
+                    <Image src={npc.picture} width={150} height={150} alt="Profile Picture" />
                 </div>
 
                 {/* <!-- Name --> */}
