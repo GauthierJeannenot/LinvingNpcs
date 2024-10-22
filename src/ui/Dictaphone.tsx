@@ -17,8 +17,8 @@ const Dictaphone = ({ npc }: {npc: Npc}) => {
     if (!textResponse) throw new Error("couldn't get chatgpt response")
     const base64AudioResponse = await AzureSpeechSynthesis(textResponse)
     if(!base64AudioResponse) throw new Error("couldn't get audio response")
-    const audio = new Audio(base64AudioResponse)
-    audio.play()
+    const audio = await new Audio(base64AudioResponse)
+    audio.play().catch(error => console.log(error))
   }
 
 
