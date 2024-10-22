@@ -3,12 +3,12 @@ import Dictaphone from "@/ui/Dictaphone"
 import { npcDatas } from "@/lib/data/npcDatas"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import Npc from "@/lib/types/Npc"
+import NpcType from "@/lib/types/Npc"
 
-export default function npc() {
+export default function Npc() {
     const param = useParams()
 
-    const [npc, setNpc] = useState<Npc>({name:"", picture:"", personae:""})
+    const [npc, setNpc] = useState<NpcType>({name:"", picture:"", personae:""})
 
     useEffect(() => {
         const response = npcDatas.find(npc => npc.name === param.npc)

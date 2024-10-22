@@ -1,13 +1,12 @@
 'use server'
 
 import { ChatCompletionMessage } from "openai/resources/chat/completions"
-import { readFileSync } from "fs";
 export const AzureSpeechSynthesis = async(text: ChatCompletionMessage) => {
     try {
 
         const ssmlData = `<speak version='1.0' xml:lang='en-US'>
                             <voice xml:lang='fr-FR' xml:gender='Male' name='fr-FR-JeromeNeural'>
-                                ${text}
+                                ${text.content}
                             </voice>
                         </speak>`;
 
@@ -21,7 +20,6 @@ const audioResponse = await fetch("https://francecentral.tts.speech.microsoft.co
   },
   body: ssmlData,
 })      
-    console.log(audioResponse)
     const arrayBuffer = await audioResponse.arrayBuffer()
     const audioBase64 = Buffer.from(arrayBuffer).toString('base64')
     return `data:audio/mp3;base64,${audioBase64}`

@@ -21,8 +21,7 @@ export const askChatGpt = async(npc: Npc, transcript: string) => {
               }
             ],
           });
-      
-          console.log(response.choices[0].message);
+          console.log(response.choices[0].message)
           return response.choices[0].message
         } catch (error) {
           console.error('Error with the OpenAI API:', error);
