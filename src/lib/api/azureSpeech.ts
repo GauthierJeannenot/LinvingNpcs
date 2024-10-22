@@ -20,8 +20,10 @@ const audioResponse = await fetch("https://francecentral.tts.speech.microsoft.co
   },
   body: ssmlData,
 })      
+    console.log("AudioResponse : " + audioResponse)
     const arrayBuffer = await audioResponse.arrayBuffer()
     const audioBase64 = Buffer.from(arrayBuffer).toString('base64')
+    console.log("AudioBase64 : " + audioBase64)
     return `data:audio/mp3;base64,${audioBase64}`
 
 
