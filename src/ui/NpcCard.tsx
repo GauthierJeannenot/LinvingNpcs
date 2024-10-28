@@ -14,7 +14,7 @@ export const NpcCard = ({ npc }: {npc: Npc}) => {
 
                 {/* <!-- Name --> */}
                 <div className="p-4 text-center">
-                    <h2 className="text-xl font-semibold text-gray-800">{npc.name}</h2>
+                    <h2 className="text-xl font-semibold text-gray-800">{npc.name} {npc.lastName}</h2>
                 </div>
             </div>
         </>

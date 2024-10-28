@@ -8,7 +8,7 @@ import NpcType from "@/lib/types/Npc"
 export default function Npc() {
     const param = useParams()
 
-    const [npc, setNpc] = useState<NpcType>({name:"", picture:"", personae:""})
+    const [npc, setNpc] = useState<NpcType>({name:"", picture:"", personae:"", lastName:""})
 
     useEffect(() => {
         const response = npcDatas.find(npc => npc.name === param.npc)
@@ -18,7 +18,7 @@ export default function Npc() {
     
     return(
         <> 
-            <h1>{npc.name}</h1>
+            <h1>{npc.name} {npc.lastName}</h1>
            {<Dictaphone npc={npc}/>}     
         </>
 

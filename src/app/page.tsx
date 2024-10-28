@@ -14,7 +14,8 @@ export default function Home(): ReactElement {
           return (
             <Link href={`/${npc.name}`} key={npc.name}>
               <NpcCard 
-              key={npc.name} npc={npc} 
+              key={npc.name} 
+              npc={npc} 
               />
             </Link>
         )})}
