@@ -1,8 +1,8 @@
 export const npcDatas = [
     {
-        name: "NPC1",
+        name: "Raener Neverember",
         picture: "https://via.placeholder.com/150",
-        personae: "quel que soit la question tu répond que deux et deux font quatre"
+        personae: "tu me présente typescript en trois points"
     },
     {
         name: "NPC2",
