@@ -13,7 +13,6 @@ const Dictaphone = ({ npc }: {npc: Npc}) => {
     finalTranscript,
     transcript,
     listening,
-    resetTranscript,
   } = useSpeechRecognition();
 
   const [isFetching, setIsFetching] = useState(false)
