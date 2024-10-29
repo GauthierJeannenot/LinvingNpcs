@@ -34,7 +34,7 @@ const Dictaphone = ({ npc }: {npc: Npc}) => {
     if (finalTranscript.length !== 0) {
       getResponse()
     }
-  }, [finalTranscript])
+  }, [finalTranscript, npc, transcript])
   
 
 
