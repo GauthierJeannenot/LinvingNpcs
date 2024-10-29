@@ -5,19 +5,14 @@ export const NpcCard = ({ npc }: {npc: Npc}) => {
 
 
     return (
-        <>
-            <div className="max-w-xs mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-                {/* <!-- Image --> */}
-                <div className="w-full h-48 bg-gray-200">
-                    <Image src={npc.picture} width={150} height={150} alt="Profile Picture" />
-                </div>
+        <div className="max-w-xs mx-auto bg-white rounded-full overflow-hidden relative">
+            <Image src={npc.picture} width={150} height={150} alt="Character Image" className="w-full h-48 object-cover" />
 
-                {/* <!-- Name --> */}
-                <div className="p-4 text-center">
-                    <h2 className="text-xl font-semibold text-gray-800">{npc.name} {npc.lastName}</h2>
-                </div>
+            {/* <!-- Overlapping Title Container at the Bottom --> */}
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+                <h2 className="text-lg font-semibold text-white text-center transform -translate-y-6">{npc.name}</h2>
             </div>
-        </>
+        </div>
     )
 
 }

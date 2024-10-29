@@ -4,6 +4,7 @@ import { npcDatas } from "@/lib/data/npcDatas"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import NpcType from "@/lib/types/Npc"
+import { Suspense } from "react"
 
 export default function Npc() {
     const param = useParams()
@@ -17,10 +18,17 @@ export default function Npc() {
 
     
     return(
-        <> 
-            <h1>{npc.name} {npc.lastName}</h1>
-           {<Dictaphone npc={npc}/>}     
-        </>
+        <div className="flex items-center justify-center"> 
+            <div className="flex-col">
+                <h1>{npc.name} {npc.lastName}</h1>
+                {
+                <Suspense fallback={<div>Loading...</div>}>
+                    <Dictaphone npc={npc} />
+                </Suspense>
+                } 
+            </div>
+                
+        </div>
 
     )
 }

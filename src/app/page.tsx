@@ -12,7 +12,7 @@ export default function Home(): ReactElement {
       <div className="flex justify-evenly w-full">
         {npcDatas.map(npc => {
           return (
-            <Link href={`/${npc.name}`} key={npc.name}>
+            <Link href={`/${npc.name}`} key={npc.name} className="p-4">
               <NpcCard 
               key={npc.name} 
               npc={npc} 
