@@ -45,6 +45,6 @@ export const npcDatas = [
     name: 'NPC',
     lastName: '2',
     picture: 'https://via.placeholder.com/150',
-    personae: "Quel que soit la question, tu réponds que non, ce n'est pas possible.",
+    personae: 'Quel que soit la question, tu réponds que non, ce n\'est pas possible.',
   },
 ];

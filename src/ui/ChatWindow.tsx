@@ -1,18 +1,37 @@
-import { Messages } from "@/lib/types/Messages"
+import { Messages } from '@/lib/types/Messages';
 
-export const ChatWindow = ({ messages, npcName }: { messages: Messages, npcName: string }) => {
-
-    
-    return(
-        <div className="w-full h-full rounded-lg border-4 border-blue-500 mt-4 p-2">
-            {messages.map(message => {
-                return(
-                    <div key={message.content} className="mt-2 mb-2">
-                        <h3 className={`${message.role === "user" ? "text-right text-white" : "text-left"}`}>{message.role === "user" ? "user" : npcName}</h3>
-                        <p className={`${message.role === "user" ? "text-right rounded-lg rounded-tr-none bg-blue-400 text-white" : "text-left rounded-lg bg-indigo-400 rounded-tl-none text-black"} p-1`}>{message.content}</p>
-                    </div>
-                )
-            })}
+export const ChatWindow = ({
+  messages,
+  npcName,
+}: {
+  messages: Messages;
+  npcName: string;
+}) => {
+  return (
+    <div className="w-full h-full rounded-lg border-2 border-blue-500 p-4 bg-white shadow-xl">
+      {messages.map((message, index) => (
+        <div
+          key={index}
+          className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
+        >
+          <div
+            className={`text-sm font-semibold mb-1 ${
+              message.role === 'user' ? 'text-blue-600' : 'text-indigo-600'
+            }`}
+          >
+            {message.role === 'user' ? 'Vous' : npcName}
+          </div>
+          <div
+            className={`inline-block p-3 rounded-lg max-w-[70%] ${
+              message.role === 'user'
+                ? 'bg-blue-400 text-white rounded-tl-none shadow-md'
+                : 'bg-indigo-400 text-white rounded-tr-none shadow-md'
+            }`}
+          >
+            <p className="whitespace-pre-wrap">{message.content}</p>
+          </div>
         </div>
-    )
-}
+      ))}
+    </div>
+  );
+};

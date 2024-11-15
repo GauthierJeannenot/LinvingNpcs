@@ -1,5 +1,5 @@
-import Npc from '@/lib/types/Npc';
 import Image from 'next/image';
+import Npc from '@/lib/types/Npc';
 
 export const NpcCard = ({ npc }: { npc: Npc }) => {
   return (

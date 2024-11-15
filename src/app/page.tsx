@@ -1,7 +1,7 @@
-import { npcDatas } from '@/lib/data/npcDatas';
-import { NpcCard } from '@/ui/NpcCard';
 import Link from 'next/link';
 import { ReactElement } from 'react';
+import { npcDatas } from '@/lib/data/npcDatas';
+import { NpcCard } from '@/ui/NpcCard';
 
 export default function Home(): ReactElement {
   return (

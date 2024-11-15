@@ -3,45 +3,42 @@ import 'regenerator-runtime/runtime';
 import SpeechRecognition, {
   useSpeechRecognition,
 } from 'react-speech-recognition';
-import Npc from '@/lib/types/Npc';
-import { askChatGpt } from '@/lib/api/chatGpt';
-import { AzureSpeechSynthesis } from '@/lib/api/azureSpeech';
 import { useEffect, useState } from 'react';
-import MicIcon from '@mui/icons-material/Mic'; // For microphone icon
+import MicIcon from '@mui/icons-material/Mic';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { ChatWindow } from './ChatWindow';
+import { AzureSpeechSynthesis } from '@/lib/api/azureSpeech';
+import { askChatGpt } from '@/lib/api/chatGpt';
+import Npc from '@/lib/types/Npc';
 import { Messages } from '@/lib/types/Messages';
 
-const Dictaphone = ({ npc }: { npc: Npc }) => {
-  const { finalTranscript, transcript, listening } = useSpeechRecognition();
+export const Dictaphone = ({ npc }: { npc: Npc }) => {
+  const { finalTranscript, listening } = useSpeechRecognition();
   const [messages, setMessages] = useState<Messages>([]);
   const [isFetching, setIsFetching] = useState(false);
-  console.log(transcript);
+
   useEffect(() => {
     const getResponse = async () => {
-      if (finalTranscript.length === 0) return; // Prévenir un appel inutile
+      if (finalTranscript.length === 0) return;
 
       setIsFetching(true);
 
-      // Crée un nouveau message utilisateur et l'ajoute au state
       const newMessage = { role: 'user', content: finalTranscript };
       setMessages((prevMessages) => [...prevMessages, newMessage]);
 
       try {
-        // Appeler GPT et obtenir la réponse
         const textResponse = await askChatGpt(npc, [...messages, newMessage]);
-        if (!textResponse) throw new Error("Couldn't get chatgpt response");
+        if (!textResponse) throw new Error('Couldn\'t get chatgpt response');
 
         const base64AudioResponse = await AzureSpeechSynthesis(
           textResponse.content,
         );
         if (!base64AudioResponse)
-          throw new Error("Couldn't get audio response");
+          throw new Error('Couldn\'t get audio response');
 
         const audio = new Audio(base64AudioResponse);
         audio.play().finally(() => setIsFetching(false));
 
-        // Ajouter la réponse du GPT aux messages
         setMessages((prevMessages) => [...prevMessages, textResponse]);
       } catch (error) {
         console.error('Error:', error);
@@ -50,26 +47,31 @@ const Dictaphone = ({ npc }: { npc: Npc }) => {
     };
 
     getResponse();
-  }, [finalTranscript, npc]); // Utilise finalTranscript comme dépendance
+  }, [finalTranscript, npc, messages]);
 
   return (
-    <div>
-      <div className="mt-4">
+    <div className="flex flex-col items-center justify-center py-4">
+      <div className="mb-4">
         {isFetching ? (
-          <p>Loading ...</p>
+          <p className="text-gray-600">Chargement...</p>
         ) : (
           <button
+            className="p-3 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-colors"
             disabled={isFetching}
             onClick={() => SpeechRecognition.startListening()}
           >
-            {listening ? <FiberManualRecordIcon /> : <MicIcon />}
+            {listening ? (
+              <FiberManualRecordIcon className="text-red-600" />
+            ) : (
+              <MicIcon />
+            )}
           </button>
         )}
       </div>
 
-      <ChatWindow messages={messages} npcName={npc.name} />
+      <div className="w-full max-w-2xl">
+        <ChatWindow messages={messages} npcName={npc.name} />
+      </div>
     </div>
   );
 };
-
-export default Dictaphone;

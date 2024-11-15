@@ -1,6 +1,5 @@
 'use server';
 
-import { ChatCompletionMessage } from 'openai/resources/chat/completions';
 export const AzureSpeechSynthesis = async (text: string) => {
   try {
     const ssmlData = `<speak version='1.0' xml:lang='en-US'>
