@@ -1,11 +1,11 @@
 'use server';
 
 import { ChatCompletionMessage } from 'openai/resources/chat/completions';
-export const AzureSpeechSynthesis = async (text: ChatCompletionMessage) => {
+export const AzureSpeechSynthesis = async (text: string) => {
   try {
     const ssmlData = `<speak version='1.0' xml:lang='en-US'>
                             <voice xml:lang='fr-FR' xml:gender='Male' name='fr-FR-JeromeNeural'>
-                                ${text.content}
+                                ${text}
                             </voice>
                         </speak>`;
 
@@ -22,11 +22,8 @@ export const AzureSpeechSynthesis = async (text: ChatCompletionMessage) => {
         body: ssmlData,
       },
     );
-    console.log(audioResponse);
-    console.log('AudioResponse : ' + audioResponse.statusText);
     const arrayBuffer = await audioResponse.arrayBuffer();
     const audioBase64 = await Buffer.from(arrayBuffer).toString('base64');
-    console.log('AudioBase64 : ' + audioBase64);
     return `data:audio/mp3;base64,${audioBase64}`;
   } catch (error) {
     console.error(error);

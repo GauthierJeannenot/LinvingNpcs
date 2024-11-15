@@ -23,9 +23,9 @@ export default function Npc() {
   }, [param.npc]);
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="flex-col">
-        <h1>
+    <div className="flex items-center justify-center flex-col">
+      <div className="flex-col w-[95%] text-center">
+        <h1 className='mt-4'>
           {npc.name} {npc.lastName}
         </h1>
         {<Dictaphone npc={npc} />}
