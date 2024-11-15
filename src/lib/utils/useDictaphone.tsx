@@ -16,8 +16,8 @@ export const useDictaphone = (npc: Npc) => {
   const getResponse = async (newMessage: Message) => {
     if (newMessage.content.length === 0 || isFetching) return;
 
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
     setIsFetching(true);
-
     try {
       const textResponse = await askChatGpt(npc, [...messages, newMessage]);
       if (!textResponse) throw new Error("Couldn't get chatgpt response");
@@ -31,11 +31,7 @@ export const useDictaphone = (npc: Npc) => {
       audio.play();
 
       // Mise à jour de l'état des messages
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        newMessage,
-        textResponse,
-      ]);
+      setMessages((prevMessages) => [...prevMessages, textResponse]);
       setIsFetching(false);
     } catch (error) {
       console.error('Error:', error);
