@@ -9,14 +9,12 @@ const openai = new OpenAI();
 
 export const askChatGpt = async (npc: Npc, messages: Message[]) => {
   try {
-    console.log(messages);
     const payload: ChatCompletionMessageParam[] = [
       { role: 'system', content: npc.personae },
-      ...messages as ChatCompletionMessageParam[],
+      ...(messages as ChatCompletionMessageParam[]),
     ];
-    console.log(payload);
     const response = await openai.chat.completions.create({
-      model: 'gpt-4', // or 'gpt-4' if you have access
+      model: 'gpt-4', // ou 'gpt-3.5-turbo'
       messages: payload,
       temperature: 1.0,
     });
@@ -26,5 +24,23 @@ export const askChatGpt = async (npc: Npc, messages: Message[]) => {
     };
   } catch (error) {
     console.error('Error with the OpenAI API:', error);
+  }
+};
+
+export const transcribeAudioBase64 = async (base64Audio: string) => {
+  try {
+    const buffer = Buffer.from(base64Audio, 'base64');
+
+    const file = new File([buffer], 'audio.webm', { type: 'audio/webm' });
+
+    const response = await openai.audio.transcriptions.create({
+      file: file,
+      model: 'whisper-1',
+    });
+
+    return response.text;
+  } catch (error) {
+    console.error('Error with the OpenAI transcription API:', error);
+    throw error;
   }
 };

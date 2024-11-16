@@ -1,18 +1,31 @@
 import { useEffect, useState } from 'react';
 import { AzureSpeechSynthesis } from '@/lib/api/azureSpeech';
-import { askChatGpt } from '@/lib/api/chatGpt';
+import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt'; // Assurez-vous que transcribeAudioBase64 existe
 import Npc from '@/lib/types/Npc';
 import { Message, Messages } from '@/lib/types/Messages';
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from 'react-speech-recognition';
 
 export const useDictaphone = (npc: Npc) => {
-  const { finalTranscript, listening } = useSpeechRecognition();
   const [messages, setMessages] = useState<Messages>([]);
   const [isFetching, setIsFetching] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null,
+  );
 
-  // Fonction pour obtenir la réponse de ChatGPT
+  useEffect(() => {
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          const recorder = new MediaRecorder(stream);
+          setMediaRecorder(recorder);
+        })
+        .catch((error) => {
+          console.error("Erreur lors de l'accès au microphone:", error);
+        });
+    }
+  }, []);
+
   const getResponse = async (newMessage: Message) => {
     if (newMessage.content.length === 0 || isFetching) return;
 
@@ -30,7 +43,6 @@ export const useDictaphone = (npc: Npc) => {
       const audio = new Audio(base64AudioResponse);
       audio.play();
 
-      // Mise à jour de l'état des messages
       setMessages((prevMessages) => [...prevMessages, textResponse]);
       setIsFetching(false);
     } catch (error) {
@@ -39,19 +51,54 @@ export const useDictaphone = (npc: Npc) => {
     }
   };
 
-  useEffect(() => {
-    if (finalTranscript.length !== 0) {
-      const newMessage = { role: 'user', content: finalTranscript };
-
-      // Appel à la fonction pour obtenir la réponse
-      getResponse(newMessage);
+  const startListening = () => {
+    if (!mediaRecorder) {
+      console.warn('MediaRecorder not available');
+      return;
     }
-  }, [finalTranscript, npc]); // Ne dépend que de finalTranscript et npc
+
+    setListening(true);
+    const audioChunks: Blob[] = [];
+
+    mediaRecorder.start();
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      setListening(false);
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        const base64Data = reader.result?.toString().split(',')[1];
+        if (base64Data) {
+          try {
+            const transcription = await transcribeAudioBase64(base64Data);
+            if (transcription) {
+              const newMessage: Message = {
+                role: 'user',
+                content: transcription,
+              };
+              getResponse(newMessage);
+            }
+          } catch (error) {
+            console.error('Error transcribing audio:', error);
+          }
+        }
+      };
+      reader.readAsDataURL(audioBlob);
+    };
+
+    setTimeout(() => {
+      mediaRecorder.stop();
+    }, 5000);
+  };
 
   return {
     messages,
     isFetching,
-    startListening: () => SpeechRecognition.startListening(),
+    startListening,
     listening,
   };
 };
