@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Messages } from '@/lib/types/Messages';
 
 export const ChatWindow = ({
@@ -7,6 +8,16 @@ export const ChatWindow = ({
   messages: Messages;
   npcName: string;
 }) => {
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
     <div className="w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto max-h-[500px]">
       {messages.map((message, index) => (
@@ -38,6 +49,7 @@ export const ChatWindow = ({
           </div>
         </div>
       ))}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

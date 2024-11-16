@@ -2,11 +2,13 @@
 
 export const AzureSpeechSynthesis = async (text: string) => {
   try {
-    const ssmlData = `<speak version='1.0' xml:lang='en-US'>
-                            <voice xml:lang='fr-FR' xml:gender='Male' name='fr-FR-JeromeNeural'>
-                                ${text}
-                            </voice>
-                        </speak>`;
+    const ssmlData = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
+            <voice name="fr-FR-RemyMultilingualNeural"> <!-- Remplace la voix ici -->
+              <mstts:express-as style="angry"> 
+                ${text}
+              </mstts:express-as>
+            </voice>
+          </speak>`;
 
     const audioResponse = await fetch(
       'https://francecentral.tts.speech.microsoft.com/cognitiveservices/v1',
