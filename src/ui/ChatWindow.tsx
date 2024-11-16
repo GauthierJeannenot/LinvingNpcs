@@ -21,7 +21,7 @@ export const ChatWindow = ({
 
   const isSmallScreen = useIsSmallScreen()
   return (
-    <div className={`w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto ${!isSmallScreen && 'scrollbar-hide'}  max-h-[500px]`}>
+    <div className={`w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto max-h-[500px]`}>
       {messages.map((message, index) => (
         <div
           key={index}
@@ -29,7 +29,7 @@ export const ChatWindow = ({
             message.role === 'user' ? 'justify-end' : 'justify-start'
           }`}
         >
-          <div className="max-w-[80%]">
+          <div className={`${isSmallScreen ? "max-w-[100%]" : "max-w-[80%]"}`}>
             <div
               className={`text-xs font-medium mb-1 ${
                 message.role === 'user'
