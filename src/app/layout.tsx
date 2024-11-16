@@ -1,5 +1,5 @@
 'use client';
-import { useIsSmallScreen } from '@/lib/utils/useIsmallScreen';
+import { useIsSmallScreen } from '@/lib/utils/useIsSmallScreen';
 import './globals.css';
 import { useState } from 'react';
 import Image from 'next/image';

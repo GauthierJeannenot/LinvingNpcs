@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Messages } from '@/lib/types/Messages';
-import { useIsSmallScreen } from '@/lib/utils/useIsmallScreen';
+import { useIsSmallScreen } from '@/lib/utils/useIsSmallScreen';
 
 export const ChatWindow = ({
   messages,
@@ -19,9 +19,11 @@ export const ChatWindow = ({
     scrollToBottom();
   }, [messages]);
 
-  const isSmallScreen = useIsSmallScreen()
+  const isSmallScreen = useIsSmallScreen();
   return (
-    <div className={`w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto max-h-[500px]`}>
+    <div
+      className={`w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto max-h-[500px]`}
+    >
       {messages.map((message, index) => (
         <div
           key={index}
@@ -29,7 +31,7 @@ export const ChatWindow = ({
             message.role === 'user' ? 'justify-end' : 'justify-start'
           }`}
         >
-          <div className={`${isSmallScreen ? "max-w-[100%]" : "max-w-[80%]"}`}>
+          <div className={`${isSmallScreen ? 'max-w-[100%]' : 'max-w-[80%]'}`}>
             <div
               className={`text-xs font-medium mb-1 ${
                 message.role === 'user'

@@ -21,8 +21,8 @@ export default function Npc() {
   if (npc === null) return;
 
   return (
-    <div className="flex items-center justify-center flex-col min-h-screen bg-gray-900 text-gray-100 py-8">
-      <div className="w-[95%] max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg">
+    <div className="flex items-center justify-center flex-col min-h-screen bg-gray-900 text-gray-100 pt-12">
+      <div className="w-[95%] max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg my-auto">
         <div className="pb-8">
           <NpcCard npc={npc} />
         </div>
