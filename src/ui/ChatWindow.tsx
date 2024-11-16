@@ -1,4 +1,5 @@
 import { Messages } from '@/lib/types/Messages';
+import { useIsSmallScreen } from '@/lib/utils/useIsmallScreen';
 
 export const ChatWindow = ({
   messages,
@@ -7,8 +8,9 @@ export const ChatWindow = ({
   messages: Messages;
   npcName: string;
 }) => {
+  const isSmallScreen = useIsSmallScreen()
   return (
-    <div className="w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto max-h-[500px]">
+    <div className={`w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto ${!isSmallScreen && 'scrollbar-hide'}  max-h-[500px]`}>
       {messages.map((message, index) => (
         <div
           key={index}
