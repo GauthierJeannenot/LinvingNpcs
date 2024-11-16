@@ -1,12 +1,17 @@
 'use server';
 
-export const AzureSpeechSynthesis = async (text: string) => {
+export const getAzureSpeechSynthesis = async (
+  text: string,
+  voice: { name: string; rate: string; pitch: string; style: string },
+) => {
   try {
     const ssmlData = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
-            <voice name="fr-FR-RemyMultilingualNeural"> <!-- Remplace la voix ici -->
-              <mstts:express-as style="angry"> 
+            <voice name="${voice.name}">
+            <prosody rate="${voice.rate}" pitch="${voice.pitch}">
+              <mstts:express-as style="${voice.style}"> 
                 ${text}
               </mstts:express-as>
+               </prosody>
             </voice>
           </speak>`;
 
@@ -18,7 +23,7 @@ export const AzureSpeechSynthesis = async (text: string) => {
           'X-Microsoft-OutputFormat': 'audio-48khz-192kbitrate-mono-mp3',
           'Content-Type': 'application/ssml+xml',
           'Ocp-Apim-Subscription-Key': `${process.env.AZURE_SPEECH_API_KEY}`,
-          'User-Agent': 'LinvingNpcs', // Replace with your app name
+          'User-Agent': 'LinvingNpcs',
         },
         body: ssmlData,
       },

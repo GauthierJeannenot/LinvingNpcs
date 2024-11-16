@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AzureSpeechSynthesis } from '@/lib/api/azureSpeech';
+import { getAzureSpeechSynthesis } from '@/lib/api/azureSpeech';
 import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt'; // Assurez-vous que transcribeAudioBase64 existe
 import Npc from '@/lib/types/Npc';
 import { Message, Messages } from '@/lib/types/Messages';
@@ -34,8 +34,9 @@ export const useDictaphone = (npc: Npc) => {
       const textResponse = await askChatGpt(npc, [...messages, newMessage]);
       if (!textResponse) throw new Error("Couldn't get chatgpt response");
 
-      const base64AudioResponse = await AzureSpeechSynthesis(
+      const base64AudioResponse = await getAzureSpeechSynthesis(
         textResponse.content,
+        npc.voice,
       );
       if (!base64AudioResponse) throw new Error("Couldn't get audio response");
 

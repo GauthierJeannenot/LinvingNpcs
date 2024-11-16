@@ -9,7 +9,7 @@ export const NpcCard = ({ npc }: { npc: Npc }) => {
         width={150}
         height={150}
         alt={`Image of ${npc.name}`}
-        className="w-full h-48 object-cover"
+        className="w-full object-cover"
       />
 
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
