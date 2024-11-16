@@ -6,12 +6,7 @@ import { Message, Messages } from '@/lib/types/Messages';
 import Meyda from 'meyda';
 
 export const useDictaphone = (npc: Npc) => {
-  const [messages, setMessages] = useState<Messages>(
-    Array.from({ length: 50 }, (_, i) => ({
-      role: i % 2 === 0 ? 'user' : 'npc',
-      content: `Message ${i + 1}`,
-    })),
-  );
+  const [messages, setMessages] = useState<Messages>([]);
 
   const [isFetching, setIsFetching] = useState(false);
   const [listening, setListening] = useState(false);
