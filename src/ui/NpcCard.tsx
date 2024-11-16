@@ -3,7 +3,7 @@ import Npc from '@/lib/types/Npc';
 
 export const NpcCard = ({ npc }: { npc: Npc }) => {
   return (
-    <div className="max-w-xs mx-auto bg-white rounded-3xl overflow-hidden relative shadow-lg transform transition-transform hover:scale-105 hover:shadow-xl">
+    <div className="max-w-xs mx-auto bg-white rounded-full overflow-hidden relative shadow-lg transform transition-transform hover:scale-105 hover:shadow-xl">
       <Image
         src={npc.picture}
         width={150}
