@@ -8,27 +8,33 @@ export const ChatWindow = ({
   npcName: string;
 }) => {
   return (
-    <div className="w-full h-full rounded-lg border-2 border-blue-500 p-4 bg-white shadow-xl">
+    <div className="w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto max-h-[500px]">
       {messages.map((message, index) => (
         <div
           key={index}
-          className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
+          className={`mb-4 flex ${
+            message.role === 'user' ? 'justify-end' : 'justify-start'
+          }`}
         >
-          <div
-            className={`text-sm font-semibold mb-1 ${
-              message.role === 'user' ? 'text-blue-600' : 'text-indigo-600'
-            }`}
-          >
-            {message.role === 'user' ? 'Vous' : npcName}
-          </div>
-          <div
-            className={`inline-block p-3 rounded-lg max-w-[70%] ${
-              message.role === 'user'
-                ? 'bg-blue-400 text-white rounded-tl-none shadow-md'
-                : 'bg-indigo-400 text-white rounded-tr-none shadow-md'
-            }`}
-          >
-            <p className="whitespace-pre-wrap">{message.content}</p>
+          <div className="max-w-[80%]">
+            <div
+              className={`text-xs font-medium mb-1 ${
+                message.role === 'user'
+                  ? 'text-blue-700 text-right'
+                  : 'text-indigo-700 text-left'
+              }`}
+            >
+              {message.role === 'user' ? 'Vous' : npcName}
+            </div>
+            <div
+              className={`inline-block p-3 rounded-xl max-w-full break-words shadow-sm transition-all transform ${
+                message.role === 'user'
+                  ? 'bg-blue-500 text-white rounded-tl-none hover:bg-blue-600'
+                  : 'bg-indigo-500 text-white rounded-tr-none hover:bg-indigo-600'
+              }`}
+            >
+              <p className="whitespace-pre-wrap">{message.content}</p>
+            </div>
           </div>
         </div>
       ))}
