@@ -11,8 +11,8 @@ export const Dictaphone = ({ npc }: { npc: Npc }) => {
     useDictaphone(npc);
 
   return (
-    <div className="flex flex-col items-center justify-center py-6 px-4 bg-gray-50 rounded-lg shadow-md">
-      <div className="mb-4">
+    <div className="flex flex-col items-center justify-center py-4 px-2 bg-gray-50 rounded-lg shadow-md">
+      <div className="mb-2">
         {isFetching ? (
           <p className="text-gray-500 font-medium animate-pulse">
             Chargement...
@@ -34,7 +34,7 @@ export const Dictaphone = ({ npc }: { npc: Npc }) => {
         )}
       </div>
 
-      <div className="w-full max-w-2xl mt-4">
+      <div className="w-full max-w-8xl mt-2">
         <ChatWindow messages={messages} npcName={npc.name} />
       </div>
     </div>

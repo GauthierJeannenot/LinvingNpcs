@@ -22,12 +22,12 @@ export const ChatWindow = ({
   const isSmallScreen = useIsSmallScreen();
   return (
     <div
-      className={`w-full h-full rounded-lg border border-blue-300 p-4 bg-white shadow-xl overflow-y-auto max-h-[500px]`}
+      className={`w-full h-full rounded-lg border border-blue-300 p-2 bg-white shadow-xl overflow-y-auto max-h-[500px]`}
     >
       {messages.map((message, index) => (
         <div
           key={index}
-          className={`mb-4 flex ${
+          className={`mb-2 flex ${
             message.role === 'user' ? 'justify-end' : 'justify-start'
           }`}
         >
@@ -42,7 +42,7 @@ export const ChatWindow = ({
               {message.role === 'user' ? 'Vous' : npcName}
             </div>
             <div
-              className={`inline-block p-3 rounded-xl max-w-full break-words shadow-sm transition-all transform ${
+              className={`inline-block p-2 rounded-xl max-w-full break-words shadow-sm transition-all transform ${
                 message.role === 'user'
                   ? 'bg-blue-500 text-white rounded-tl-none hover:bg-blue-600'
                   : 'bg-indigo-500 text-white rounded-tr-none hover:bg-indigo-600'

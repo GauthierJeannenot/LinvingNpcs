@@ -24,25 +24,25 @@ export default function RootLayout({
             <div
               className={`${
                 isMenuOpen ? 'w-3/12' : 'w-16'
-              } h-full bg-gradient-to-b from-gray-800 to-gray-700 shadow-lg p-6 transition-all duration-300 ease-in-out`}
+              } h-full bg-gradient-to-b from-gray-800 to-gray-700 shadow-lg p-4 transition-all duration-300 ease-in-out`}
             >
               <button
-                className="text-white mb-4 focus:outline-none"
+                className="text-white mb-2 focus:outline-none"
                 onClick={toggleMenu}
               >
                 {isMenuOpen ? '←' : '☰'}
               </button>
               {isMenuOpen && (
                 <div>
-                  <h1 className="text-gray-100 font-bold text-2xl mb-4">
+                  <h1 className="text-gray-100 font-bold text-2xl mb-2">
                     Menu
                   </h1>
-                  <ul className="space-y-4">
+                  <ul className="space-y-2">
                     {npcDatas.map((npc) => (
                       <li key={npc.name}>
                         <a
                           href={npc.name}
-                          className="flex items-center space-x-4 hover:bg-gray-700 p-3 rounded-lg transition-all"
+                          className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-lg transition-all"
                         >
                           <Image
                             src={npc.picture}
@@ -63,7 +63,7 @@ export default function RootLayout({
             </div>
           )}
 
-          <div className="flex-grow h-full bg-gray-850 shadow-inner p-8 overflow-y-hidden">
+          <div className="flex-grow h-full bg-gray-850 shadow-inner p-4 overflow-y-hidden">
             {children}
           </div>
         </div>
