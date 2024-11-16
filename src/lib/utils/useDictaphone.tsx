@@ -30,7 +30,6 @@ export const useDictaphone = (npc: Npc) => {
     if (newMessage.content.length === 0 || isFetching) return;
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
-    setIsFetching(true);
     try {
       const textResponse = await askChatGpt(npc, [...messages, newMessage]);
       if (!textResponse) throw new Error("Couldn't get chatgpt response");
@@ -74,6 +73,7 @@ export const useDictaphone = (npc: Npc) => {
         const base64Data = reader.result?.toString().split(',')[1];
         if (base64Data) {
           try {
+            setIsFetching(true);
             const transcription = await transcribeAudioBase64(base64Data);
             if (transcription) {
               const newMessage: Message = {
