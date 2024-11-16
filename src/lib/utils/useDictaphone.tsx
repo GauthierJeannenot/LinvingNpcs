@@ -59,14 +59,73 @@ export const useDictaphone = (npc: Npc) => {
 
     setListening(true);
     const audioChunks: Blob[] = [];
-
     mediaRecorder.start();
+
+    // Utilisation de l'AudioContext pour analyser le son
+    const audioContext = new window.AudioContext();
+    const mediaStreamSource = audioContext.createMediaStreamSource(
+      mediaRecorder.stream,
+    );
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    mediaStreamSource.connect(analyser);
+
+    let silenceTimeout: NodeJS.Timeout | null = null;
+    let isSpeaking = false;
+    let noiseLevelSum = 0;
+    let noiseSampleCount = 0;
+    let adaptiveThreshold = 15; // Valeur initiale du seuil, ajustable selon l'environnement
+
+    const checkForSilence = () => {
+      analyser.getByteTimeDomainData(dataArray);
+
+      let maxAmplitude = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        maxAmplitude = Math.max(maxAmplitude, Math.abs(dataArray[i] - 128));
+      }
+
+      // Mise à jour de l'estimation du bruit ambiant
+      if (!isSpeaking) {
+        noiseLevelSum += maxAmplitude;
+        noiseSampleCount++;
+        adaptiveThreshold = noiseLevelSum / noiseSampleCount + 5; // Ajuste le seuil avec une marge de 5 unités pour détecter le silence
+      }
+      // Détection de la parole ou du silence
+      if (maxAmplitude < adaptiveThreshold) {
+        // Utilise le seuil adaptatif
+        if (isSpeaking) {
+          // Détection du silence après avoir parlé
+          if (silenceTimeout) {
+            clearTimeout(silenceTimeout);
+          }
+          silenceTimeout = setTimeout(() => {
+            stopListening(); // Arrête l'enregistrement après une période de silence
+          }, 500); // Délai après lequel on considère que l'utilisateur a fini de parler (ajuste selon tes besoins)
+        }
+      } else {
+        isSpeaking = true;
+        if (silenceTimeout) {
+          clearTimeout(silenceTimeout);
+        }
+      }
+
+      if (mediaRecorder.state === 'recording') {
+        requestAnimationFrame(checkForSilence);
+      }
+    };
+
+    checkForSilence();
+
     mediaRecorder.ondataavailable = (event) => {
       audioChunks.push(event.data);
     };
 
     mediaRecorder.onstop = async () => {
       setListening(false);
+
       const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
       const reader = new FileReader();
 
@@ -90,10 +149,13 @@ export const useDictaphone = (npc: Npc) => {
       };
       reader.readAsDataURL(audioBlob);
     };
+  };
 
-    setTimeout(() => {
+  // Fonction pour arrêter l'enregistrement
+  const stopListening = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
-    }, 5000);
+    }
   };
 
   return {
