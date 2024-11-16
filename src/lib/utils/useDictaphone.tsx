@@ -3,6 +3,7 @@ import { getAzureSpeechSynthesis } from '@/lib/api/azureSpeech';
 import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt'; // Assurez-vous que transcribeAudioBase64 existe
 import Npc from '@/lib/types/Npc';
 import { Message, Messages } from '@/lib/types/Messages';
+import Meyda from 'meyda';
 
 export const useDictaphone = (npc: Npc) => {
   const [messages, setMessages] = useState<Messages>([]);
@@ -11,6 +12,7 @@ export const useDictaphone = (npc: Npc) => {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null,
   );
+  console.log(mediaRecorder);
 
   useEffect(() => {
     if (navigator.mediaDevices) {
@@ -59,14 +61,59 @@ export const useDictaphone = (npc: Npc) => {
 
     setListening(true);
     const audioChunks: Blob[] = [];
+    let silenceCounter = 0; // Compteur naïf de périodes de silence
+    const maxSilenceCount = 200; // Valeur maximale avant d'arrêter l'enregistrement
 
     mediaRecorder.start();
     mediaRecorder.ondataavailable = (event) => {
       audioChunks.push(event.data);
     };
 
+    // Configuration de l'AudioContext et de Meyda
+    const audioContext = new window.AudioContext();
+    const mediaStreamSource = audioContext.createMediaStreamSource(
+      mediaRecorder.stream,
+    );
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+
+    mediaStreamSource.connect(analyser);
+
+    const meydaAnalyzer = Meyda.createMeydaAnalyzer({
+      audioContext,
+      source: mediaStreamSource,
+      bufferSize: 512,
+      featureExtractors: ['rms'],
+      callback: (features: { rms: number }) => {
+        const { rms } = features;
+
+        if (rms < 0.01) {
+          // Seuil simple pour la détection de silence
+          silenceCounter++;
+          console.log(
+            `Silence détecté. Compteur de silence : ${silenceCounter}`,
+          );
+          if (silenceCounter >= maxSilenceCount) {
+            console.log(
+              "Arrêt de l'enregistrement après seuil de silence atteint",
+            );
+            stopListening(); // Arrête l'enregistrement
+          }
+        } else {
+          console.log('Voix détectée. Réinitialisation du compteur de silence');
+          silenceCounter = 0; // Réinitialisation du compteur si du son est détecté
+        }
+      },
+    });
+
+    meydaAnalyzer.start();
+
     mediaRecorder.onstop = async () => {
       setListening(false);
+      meydaAnalyzer.stop();
+      mediaStreamSource.disconnect(); // Déconnecte la source
+      audioContext.close(); // Ferme le contexte audio
+
       const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
       const reader = new FileReader();
 
@@ -90,10 +137,15 @@ export const useDictaphone = (npc: Npc) => {
       };
       reader.readAsDataURL(audioBlob);
     };
+  };
 
-    setTimeout(() => {
+  const stopListening = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      console.log("Arrêt de l'enregistrement via stopListening");
       mediaRecorder.stop();
-    }, 5000);
+    } else {
+      console.log("Le mediaRecorder n'est pas dans un état d'enregistrement");
+    }
   };
 
   return {
