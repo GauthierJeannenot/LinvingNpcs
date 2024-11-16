@@ -68,7 +68,7 @@ export const npcDatas = [
     lastName: 'Tearwind',
     picture: '/images/Mira_Tearwind.png',
     voice: {
-      name: 'fr-FR-SylvieNeural',
+      name: 'fr-FR-DeniseNeural',
       rate: 'slow',
       pitch: 'medium',
       style: 'whispering',
@@ -87,7 +87,7 @@ export const npcDatas = [
     lastName: 'Blackroot',
     picture: '/images/Thorn_Blackroot.png',
     voice: {
-      name: 'fr-FR-JacquesNeural',
+      name: 'fr-FR-AlainNeural',
       rate: 'slow',
       pitch: 'low',
       style: 'serious',
