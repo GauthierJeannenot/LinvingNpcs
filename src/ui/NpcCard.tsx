@@ -21,7 +21,7 @@ export const NpcCard = ({ npc }: { npc: Npc }) => {
         alt={`Image of ${npc.name}`}
         className={`${
           isSmallScreen
-            ? 'rounded-full w-16 h-16 border-2 border-gray-300 shadow-sm'
+            ? 'rounded-full w-32 h-32 border-2 border-gray-300 shadow-sm'
             : 'w-full h-full object-cover'
         } object-cover transition-all duration-300 ease-in-out`}
         style={{ margin: '0 auto', padding: '2px' }}
