@@ -5,10 +5,14 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { ChatWindow } from './ChatWindow';
 import Npc from '@/lib/types/Npc';
 import { useDictaphone } from '@/lib/utils/useDictaphone';
+import { useUser } from '@/lib/utils/useUser';
 
 export const Dictaphone = ({ npc }: { npc: Npc }) => {
   const { startListening, isFetching, listening, messages } =
     useDictaphone(npc);
+
+  const user = useUser('jeannenot.gauthier@gmail.com');
+  console.log(user);
 
   return (
     <div className="flex flex-col items-center justify-center py-4 px-2 bg-gray-50 rounded-lg shadow-md">
