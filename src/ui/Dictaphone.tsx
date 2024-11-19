@@ -12,8 +12,8 @@ export const Dictaphone = ({ npc }: { npc: Npc }) => {
   const { startListening, isFetching, listening, messages } =
     useDictaphone(npc);
 
-  const userNpcs = useGamesNpcs(1);
-  console.log(userNpcs);
+  const userGames = useGamesNpcs(1);
+  console.log(userGames);
   const user = useUser('jeannenot.gauthier@gmail.com');
   console.log(user);
 
