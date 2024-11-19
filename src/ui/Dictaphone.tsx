@@ -6,11 +6,14 @@ import { ChatWindow } from './ChatWindow';
 import Npc from '@/lib/types/Npc';
 import { useDictaphone } from '@/lib/utils/useDictaphone';
 import { useUser } from '@/lib/utils/useUser';
+import { useGamesNpcs } from '@/lib/utils/useGamesNpcs';
 
 export const Dictaphone = ({ npc }: { npc: Npc }) => {
   const { startListening, isFetching, listening, messages } =
     useDictaphone(npc);
 
+  const userNpcs = useGamesNpcs(1);
+  console.log(userNpcs);
   const user = useUser('jeannenot.gauthier@gmail.com');
   console.log(user);
 

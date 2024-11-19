@@ -13,7 +13,6 @@ export const useDictaphone = (npc: Npc) => {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null,
   );
-  console.log(mediaRecorder);
 
   useEffect(() => {
     if (navigator.mediaDevices) {
