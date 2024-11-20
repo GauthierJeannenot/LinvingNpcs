@@ -21,7 +21,7 @@ export const config = {
       const { data, error } = await supabase
         .from('User')
         .select('id')
-        .eq('email', user.email)
+        .eq('email', user.email || "")
         .single();
       console.log(data);
 
@@ -35,6 +35,7 @@ export const config = {
       }
       return true;
     },
+
   },
 } satisfies NextAuthOptions;
 

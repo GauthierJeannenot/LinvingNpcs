@@ -5,9 +5,3 @@ export default interface NpcType {
   voice: { name: string; rate: string; pitch: string; style: string };
   personae: string;
 }
-
-export interface UserNpcs {
-  Npc: {
-      npc: NpcType
-  }[]
-}

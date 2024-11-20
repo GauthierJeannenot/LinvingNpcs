@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchUser } from '../api/fetchUser';
-import { User } from '../types/User';
+import { User } from '../api/fetchUser';
 
 export const useUser = (email: string) => {
   const [user, setUser] = useState<User>();
