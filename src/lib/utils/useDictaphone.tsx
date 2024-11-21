@@ -123,7 +123,7 @@ export const useDictaphone = () => {
         activeAudioRef.current = null; // Réinitialiser après lecture
         if (npcMentioned) {
           hasGreetedRef.current = false; // Reset pour le prochain PNJ
-          router.push(`/npc/${npcMentioned}`);
+          router.push(`/${npcMentioned}`);
         }
       });
 
