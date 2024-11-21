@@ -30,12 +30,7 @@ export const Dictaphone = () => {
     <div className="flex flex-col items-center justify-center py-4 px-2 bg-gray-50 rounded-lg shadow-md">
       {/* Affichage du NPC actuel */}
       <div className="flex items-center mb-4">
-        <div className="mr-4">
-          <NpcCard npc={currentNpc} />
-        </div>
-        <h1 className="text-lg font-bold text-gray-800">
-          {currentNpc.name} {currentNpc.lastName}
-        </h1>
+        <NpcCard npc={currentNpc} />
       </div>
 
       {/* Bouton pour démarrer/arrêter l'écoute */}
