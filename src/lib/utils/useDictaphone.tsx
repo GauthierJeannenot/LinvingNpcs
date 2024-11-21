@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { getAzureSpeechSynthesis } from '@/lib/api/azureSpeech';
-import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt'; // Assurez-vous que transcribeAudioBase64 existe
+import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt';
 import Npc from '@/lib/types/Npc';
 import { Message, Messages } from '@/lib/types/Messages';
 import Meyda from 'meyda';
 
 export const useDictaphone = (npc: Npc) => {
   const [messages, setMessages] = useState<Messages>([]);
-
   const [isFetching, setIsFetching] = useState(false);
   const [listening, setListening] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
@@ -59,49 +58,88 @@ export const useDictaphone = (npc: Npc) => {
       return;
     }
 
+    if (listening) {
+      console.warn("L'enregistrement est déjà en cours");
+      return;
+    }
+
     setListening(true);
     const audioChunks: Blob[] = [];
-    let silenceCounter = 0; // Compteur naïf de périodes de silence
-    const maxSilenceCount = 200; // Valeur maximale avant d'arrêter l'enregistrement
+    let silenceCounter = 0;
+    const maxSilenceCount = 200;
 
     mediaRecorder.start();
     mediaRecorder.ondataavailable = (event) => {
       audioChunks.push(event.data);
     };
 
-    // Configuration de l'AudioContext et de Meyda
     const audioContext = new window.AudioContext();
     const mediaStreamSource = audioContext.createMediaStreamSource(
       mediaRecorder.stream,
     );
+
+    // Création d'un filtre passe-bande
+    const bandPassFilter = audioContext.createBiquadFilter();
+    bandPassFilter.type = 'bandpass';
+    bandPassFilter.frequency.value = 200;
+    bandPassFilter.Q.setValueAtTime(1, audioContext.currentTime);
+
+    mediaStreamSource.connect(bandPassFilter);
+
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
+    bandPassFilter.connect(analyser);
 
-    mediaStreamSource.connect(analyser);
+    const canvas = document.getElementById('spectrum') as HTMLCanvasElement;
+    const canvasCtx = canvas?.getContext('2d');
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    const draw = () => {
+      if (!listening) return;
+
+      analyser.getByteFrequencyData(dataArray);
+
+      if (canvasCtx) {
+        canvasCtx.fillStyle = 'black';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / dataArray.length) * 2.5;
+        let barHeight;
+        let x = 0;
+
+        for (let i = 0; i < dataArray.length; i++) {
+          barHeight = dataArray[i] / 2;
+
+          canvasCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
+          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+          x += barWidth + 1;
+        }
+      }
+
+      requestAnimationFrame(draw);
+    };
+
+    draw();
 
     const meydaAnalyzer = Meyda.createMeydaAnalyzer({
       audioContext,
-      source: mediaStreamSource,
+      source: bandPassFilter,
       bufferSize: 512,
       featureExtractors: ['rms'],
       callback: (features: { rms: number }) => {
         const { rms } = features;
 
         if (rms < 0.01) {
-          // Seuil simple pour la détection de silence
           silenceCounter++;
-          console.log(
-            `Silence détecté. Compteur de silence : ${silenceCounter}`,
-          );
           if (silenceCounter >= maxSilenceCount) {
             console.log(
               "Arrêt de l'enregistrement après seuil de silence atteint",
             );
-            stopListening(); // Arrête l'enregistrement
+            stopListening();
           }
         } else {
-          console.log('Voix détectée. Réinitialisation du compteur de silence');
-          silenceCounter = 0; // Réinitialisation du compteur si du son est détecté
+          silenceCounter = 0;
         }
       },
     });
@@ -111,8 +149,9 @@ export const useDictaphone = (npc: Npc) => {
     mediaRecorder.onstop = async () => {
       setListening(false);
       meydaAnalyzer.stop();
-      mediaStreamSource.disconnect(); // Déconnecte la source
-      audioContext.close(); // Ferme le contexte audio
+      mediaStreamSource.disconnect();
+      bandPassFilter.disconnect();
+      audioContext.close();
 
       const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
       const reader = new FileReader();
@@ -141,17 +180,18 @@ export const useDictaphone = (npc: Npc) => {
 
   const stopListening = () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-      console.log("Arrêt de l'enregistrement via stopListening");
       mediaRecorder.stop();
     } else {
-      console.log("Le mediaRecorder n'est pas dans un état d'enregistrement");
+      console.warn('Aucun enregistrement en cours');
     }
+    setListening(false);
   };
 
   return {
     messages,
     isFetching,
     startListening,
+    stopListening,
     listening,
   };
 };

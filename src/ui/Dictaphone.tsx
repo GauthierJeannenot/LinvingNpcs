@@ -7,26 +7,38 @@ import Npc from '@/lib/types/Npc';
 import { useDictaphone } from '@/lib/utils/useDictaphone';
 
 export const Dictaphone = ({ npc }: { npc: Npc }) => {
-  const { startListening, isFetching, listening, messages } =
+  const { startListening, stopListening, isFetching, listening, messages } =
     useDictaphone(npc);
+
+  const handleButtonClick = () => {
+    if (listening) {
+      stopListening(); // Arrêter l'écoute si en cours
+    } else {
+      startListening(); // Commencer l'écoute si arrêté
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center py-4 px-2 bg-gray-50 rounded-lg shadow-md">
       <div className="mb-2">
         {isFetching ? (
-          <p className="text-gray-500 font-medium animate-pulse">
-            Chargement...
-          </p>
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
         ) : (
           <button
-            className={`p-4 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-transform transform ${
+            className={`p-4 rounded-full ${
+              listening ? 'bg-red-500' : 'bg-blue-500'
+            } text-white shadow-lg hover:scale-110 transition-transform transform ${
               listening ? 'scale-105' : ''
-            } focus:outline-none focus:ring-4 focus:ring-blue-300`}
+            } focus:outline-none focus:ring-4 ${
+              listening ? 'focus:ring-red-300' : 'focus:ring-blue-300'
+            }`}
             disabled={isFetching}
-            onClick={startListening}
+            onClick={handleButtonClick}
           >
             {listening ? (
-              <FiberManualRecordIcon className="text-red-600 animate-pulse" />
+              <FiberManualRecordIcon className="animate-pulse" />
             ) : (
               <MicIcon className="text-white" />
             )}
