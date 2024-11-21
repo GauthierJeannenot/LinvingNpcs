@@ -3,12 +3,18 @@ import 'regenerator-runtime/runtime';
 import MicIcon from '@mui/icons-material/Mic';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { ChatWindow } from './ChatWindow';
-import Npc from '@/lib/types/Npc';
 import { useDictaphone } from '@/lib/utils/useDictaphone';
+import { NpcCard } from './NpcCard';
 
-export const Dictaphone = ({ npc }: { npc: Npc }) => {
-  const { startListening, stopListening, isFetching, listening, messages } =
-    useDictaphone(npc);
+export const Dictaphone = () => {
+  const {
+    currentNpc, // Utilise directement le NPC actif du hook
+    startListening,
+    stopListening,
+    isFetching,
+    listening,
+    messages,
+  } = useDictaphone();
 
   const handleButtonClick = () => {
     if (listening) {
@@ -18,8 +24,21 @@ export const Dictaphone = ({ npc }: { npc: Npc }) => {
     }
   };
 
+  if (!currentNpc) return null;
+
   return (
     <div className="flex flex-col items-center justify-center py-4 px-2 bg-gray-50 rounded-lg shadow-md">
+      {/* Affichage du NPC actuel */}
+      <div className="flex items-center mb-4">
+        <div className="mr-4">
+          <NpcCard npc={currentNpc} />
+        </div>
+        <h1 className="text-lg font-bold text-gray-800">
+          {currentNpc.name} {currentNpc.lastName}
+        </h1>
+      </div>
+
+      {/* Bouton pour démarrer/arrêter l'écoute */}
       <div className="mb-2">
         {isFetching ? (
           <div className="flex items-center justify-center">
@@ -46,8 +65,9 @@ export const Dictaphone = ({ npc }: { npc: Npc }) => {
         )}
       </div>
 
-      <div className="w-full max-w-8xl mt-2">
-        <ChatWindow messages={messages} npcName={npc.name} />
+      {/* Fenêtre de chat */}
+      <div className="w-full max-w-8xl mt-4">
+        <ChatWindow messages={messages} npcName={currentNpc.name} />
       </div>
     </div>
   );

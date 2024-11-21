@@ -4,64 +4,101 @@ import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt';
 import Npc from '@/lib/types/Npc';
 import { Message, Messages } from '@/lib/types/Messages';
 import Meyda from 'meyda';
+import { npcs } from '../data/npc';
+import { useParams, useRouter } from 'next/navigation';
 
-export const useDictaphone = (npc: Npc) => {
+export const useDictaphone = () => {
+  const router = useRouter();
+  const param = useParams();
+  const npcName = param.npc; // Récupère le nom du NPC dans l'URL
+  const [currentNpc, setCurrentNpc] = useState<Npc | null>(null);
   const [messages, setMessages] = useState<Messages>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [listening, setListening] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null,
-  );
+  const [mediaRecorder] = useState<MediaRecorder | null>(null);
 
+  // Synchroniser `currentNpc` avec le paramètre d'URL
   useEffect(() => {
-    if (navigator.mediaDevices) {
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-          const recorder = new MediaRecorder(stream);
-          setMediaRecorder(recorder);
-        })
-        .catch((error) => {
-          console.error("Erreur lors de l'accès au microphone:", error);
-        });
+    if (npcName) {
+      const matchedNpc = npcs.find((npc) => npc.name === npcName);
+      if (matchedNpc) {
+        setCurrentNpc(matchedNpc);
+        setMessages([]); // Réinitialiser les messages à chaque changement de NPC
+        greetNpc(matchedNpc); // Faire parler le NPC automatiquement
+      }
     }
-  }, []);
+  }, [npcName]);
 
-  const getResponse = async (newMessage: Message) => {
-    if (newMessage.content.length === 0 || isFetching) return;
+  // Fonction pour saluer automatiquement lorsque le joueur arrive
+  const greetNpc = async (npc: Npc) => {
+    const greetingMessage: Message = {
+      role: 'system',
+      content: `Le joueur arrive pour parler avec ${npc.name}.`,
+    };
 
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setIsFetching(true);
     try {
-      const textResponse = await askChatGpt(npc, [...messages, newMessage]);
-      if (!textResponse) throw new Error("Couldn't get chatgpt response");
+      const textResponse = await askChatGpt(npc, [greetingMessage]);
 
-      const base64AudioResponse = await getAzureSpeechSynthesis(
-        textResponse.content,
-        npc.voice,
-      );
-      if (!base64AudioResponse) throw new Error("Couldn't get audio response");
+      if (textResponse) {
+        const base64AudioResponse = await getAzureSpeechSynthesis(
+          textResponse.content,
+          npc.voice,
+        );
+        const audio = new Audio(base64AudioResponse);
+        audio.play();
 
-      const audio = new Audio(base64AudioResponse);
-      audio.play();
-
-      setMessages((prevMessages) => [...prevMessages, textResponse]);
-      setIsFetching(false);
+        setMessages([{ role: 'assistant', content: textResponse.content }]);
+      }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error during greeting:', error);
+    } finally {
       setIsFetching(false);
     }
   };
 
-  const startListening = () => {
-    if (!mediaRecorder) {
-      console.warn('MediaRecorder not available');
-      return;
-    }
+  // Fonction pour gérer la réponse du NPC
+  const getResponse = async (newMessage: Message) => {
+    if (!currentNpc || newMessage.content.length === 0 || isFetching) return;
 
-    if (listening) {
-      console.warn("L'enregistrement est déjà en cours");
-      return;
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    try {
+      const textResponse = await askChatGpt(currentNpc, [
+        ...messages,
+        newMessage,
+      ]);
+
+      if (!textResponse) throw new Error("Couldn't get chatgpt response");
+
+      const npcMentioned = currentNpc.connections.find((name) =>
+        textResponse.content.includes(name),
+      );
+
+      const base64AudioResponse = await getAzureSpeechSynthesis(
+        textResponse.content,
+        currentNpc.voice,
+      );
+      const audio = new Audio(base64AudioResponse);
+      audio.play();
+
+      // Rediriger vers le nouveau NPC après la lecture audio
+      audio.addEventListener('ended', () => {
+        if (npcMentioned) {
+          router.push(`/npc/${npcMentioned}`); // Navigation vers la page du nouveau NPC
+        }
+      });
+
+      setMessages((prevMessages) => [...prevMessages, textResponse]);
+    } catch (error) {
+      console.error('Error fetching response:', error);
+    } finally {
+      setIsFetching(false);
     }
+  };
+
+  // Fonction pour commencer l'écoute
+  const startListening = () => {
+    if (!mediaRecorder || listening) return;
 
     setListening(true);
     const audioChunks: Blob[] = [];
@@ -78,49 +115,15 @@ export const useDictaphone = (npc: Npc) => {
       mediaRecorder.stream,
     );
 
-    // Création d'un filtre passe-bande
     const bandPassFilter = audioContext.createBiquadFilter();
     bandPassFilter.type = 'bandpass';
     bandPassFilter.frequency.value = 200;
     bandPassFilter.Q.setValueAtTime(1, audioContext.currentTime);
-
     mediaStreamSource.connect(bandPassFilter);
 
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
     bandPassFilter.connect(analyser);
-
-    const canvas = document.getElementById('spectrum') as HTMLCanvasElement;
-    const canvasCtx = canvas?.getContext('2d');
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-    const draw = () => {
-      if (!listening) return;
-
-      analyser.getByteFrequencyData(dataArray);
-
-      if (canvasCtx) {
-        canvasCtx.fillStyle = 'black';
-        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const barWidth = (canvas.width / dataArray.length) * 2.5;
-        let barHeight;
-        let x = 0;
-
-        for (let i = 0; i < dataArray.length; i++) {
-          barHeight = dataArray[i] / 2;
-
-          canvasCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
-          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
-          x += barWidth + 1;
-        }
-      }
-
-      requestAnimationFrame(draw);
-    };
-
-    draw();
 
     const meydaAnalyzer = Meyda.createMeydaAnalyzer({
       audioContext,
@@ -128,16 +131,9 @@ export const useDictaphone = (npc: Npc) => {
       bufferSize: 512,
       featureExtractors: ['rms'],
       callback: (features: { rms: number }) => {
-        const { rms } = features;
-
-        if (rms < 0.01) {
+        if (features.rms < 0.01) {
           silenceCounter++;
-          if (silenceCounter >= maxSilenceCount) {
-            console.log(
-              "Arrêt de l'enregistrement après seuil de silence atteint",
-            );
-            stopListening();
-          }
+          if (silenceCounter >= maxSilenceCount) stopListening();
         } else {
           silenceCounter = 0;
         }
@@ -163,11 +159,7 @@ export const useDictaphone = (npc: Npc) => {
             setIsFetching(true);
             const transcription = await transcribeAudioBase64(base64Data);
             if (transcription) {
-              const newMessage: Message = {
-                role: 'user',
-                content: transcription,
-              };
-              getResponse(newMessage);
+              getResponse({ role: 'user', content: transcription });
             }
           } catch (error) {
             console.error('Error transcribing audio:', error);
@@ -178,16 +170,16 @@ export const useDictaphone = (npc: Npc) => {
     };
   };
 
+  // Fonction pour arrêter l'écoute
   const stopListening = () => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
+    if (mediaRecorder?.state === 'recording') {
       mediaRecorder.stop();
-    } else {
-      console.warn('Aucun enregistrement en cours');
     }
     setListening(false);
   };
 
   return {
+    currentNpc,
     messages,
     isFetching,
     startListening,

@@ -3,7 +3,7 @@ import { useIsSmallScreen } from '@/lib/utils/useIsSmallScreen';
 import './globals.css';
 import { useState } from 'react';
 import Image from 'next/image';
-import { npcDatas } from '@/lib/data/npcDatas';
+import { npcs } from '@/lib/data/npc';
 
 export default function RootLayout({
   children,
@@ -38,7 +38,7 @@ export default function RootLayout({
                     Menu
                   </h1>
                   <ul className="space-y-2">
-                    {npcDatas.map((npc) => (
+                    {npcs.map((npc) => (
                       <li key={npc.name}>
                         <a
                           href={npc.name}

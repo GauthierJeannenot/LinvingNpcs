@@ -7,23 +7,34 @@ import Npc from '../types/Npc';
 
 const openai = new OpenAI();
 
-export const askChatGpt = async (npc: Npc, messages: Message[]) => {
+export const askChatGpt = async (
+  npc: Npc,
+  messages: Message[],
+  previousNpcName?: string, // Nom du NPC précédent, optionnel
+) => {
   try {
+    const systemContent = previousNpcName
+      ? `${npc.personae}\nLe joueur arrive après avoir parlé avec ${previousNpcName}.`
+      : npc.personae;
+
     const payload: ChatCompletionMessageParam[] = [
-      { role: 'system', content: npc.personae },
+      { role: 'system', content: systemContent },
       ...(messages as ChatCompletionMessageParam[]),
     ];
+
     const response = await openai.chat.completions.create({
       model: 'gpt-4', // ou 'gpt-3.5-turbo'
       messages: payload,
       temperature: 1.0,
     });
+
     return {
       role: 'assistant',
-      content: response.choices[0].message.content ?? '',
+      content: response.choices[0]?.message?.content ?? '',
     };
   } catch (error) {
     console.error('Error with the OpenAI API:', error);
+    throw new Error('Failed to fetch ChatGPT response');
   }
 };
 
