@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getAzureSpeechSynthesis } from '@/lib/api/azureSpeech';
 import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt';
 import Npc from '@/lib/types/Npc';
@@ -10,26 +10,47 @@ import { useParams, useRouter } from 'next/navigation';
 export const useDictaphone = () => {
   const router = useRouter();
   const param = useParams();
-  const npcName = param.npc; // Récupère le nom du NPC dans l'URL
+  const { npc: npcName } = param; // Récupère le nom du PNJ dans l'URL
   const [currentNpc, setCurrentNpc] = useState<Npc | null>(null);
   const [messages, setMessages] = useState<Messages>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [listening, setListening] = useState(false);
-  const [mediaRecorder] = useState<MediaRecorder | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null,
+  );
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null); // Référence pour l'Audio actif
+  const hasGreetedRef = useRef(false); // Indique si le PNJ a déjà parlé après redirection
 
-  // Synchroniser `currentNpc` avec le paramètre d'URL
+  useEffect(() => {
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          const recorder = new MediaRecorder(stream);
+          setMediaRecorder(recorder);
+        })
+        .catch((error) => {
+          console.error("Erreur lors de l'accès au microphone :", error);
+        });
+    }
+  }, []);
+
   useEffect(() => {
     if (npcName) {
       const matchedNpc = npcs.find((npc) => npc.name === npcName);
       if (matchedNpc) {
         setCurrentNpc(matchedNpc);
-        setMessages([]); // Réinitialiser les messages à chaque changement de NPC
-        greetNpc(matchedNpc); // Faire parler le NPC automatiquement
+        setMessages([]); // Réinitialise les messages pour le nouveau PNJ
+
+        // Le PNJ salue automatiquement (uniquement si ce n'est pas déjà fait)
+        if (!hasGreetedRef.current) {
+          greetNpc(matchedNpc);
+          hasGreetedRef.current = true; // Marque que le PNJ a salué
+        }
       }
     }
   }, [npcName]);
 
-  // Fonction pour saluer automatiquement lorsque le joueur arrive
   const greetNpc = async (npc: Npc) => {
     const greetingMessage: Message = {
       role: 'system',
@@ -46,20 +67,32 @@ export const useDictaphone = () => {
           npc.voice,
         );
         const audio = new Audio(base64AudioResponse);
-        audio.play();
 
+        // Stocker l'instance Audio
+        activeAudioRef.current = audio;
+
+        audio.play();
         setMessages([{ role: 'assistant', content: textResponse.content }]);
+
+        audio.addEventListener('ended', () => {
+          activeAudioRef.current = null; // Réinitialiser après la fin de la lecture
+        });
       }
     } catch (error) {
-      console.error('Error during greeting:', error);
+      console.error('Erreur pendant la salutation :', error);
     } finally {
       setIsFetching(false);
     }
   };
 
-  // Fonction pour gérer la réponse du NPC
   const getResponse = async (newMessage: Message) => {
     if (!currentNpc || newMessage.content.length === 0 || isFetching) return;
+
+    // Arrêter l'audio actif si l'utilisateur parle
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+    }
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     try {
@@ -68,7 +101,7 @@ export const useDictaphone = () => {
         newMessage,
       ]);
 
-      if (!textResponse) throw new Error("Couldn't get chatgpt response");
+      if (!textResponse) throw new Error("Impossible d'obtenir une réponse");
 
       const npcMentioned = currentNpc.connections.find((name) =>
         textResponse.content.includes(name),
@@ -79,26 +112,45 @@ export const useDictaphone = () => {
         currentNpc.voice,
       );
       const audio = new Audio(base64AudioResponse);
+
+      // Stocker l'instance Audio
+      activeAudioRef.current = audio;
+
       audio.play();
 
-      // Rediriger vers le nouveau NPC après la lecture audio
+      // Rediriger vers le prochain NPC après la lecture audio
       audio.addEventListener('ended', () => {
+        activeAudioRef.current = null; // Réinitialiser après lecture
         if (npcMentioned) {
-          router.push(`/npc/${npcMentioned}`); // Navigation vers la page du nouveau NPC
+          hasGreetedRef.current = false; // Reset pour le prochain PNJ
+          router.push(`/npc/${npcMentioned}`);
         }
       });
 
       setMessages((prevMessages) => [...prevMessages, textResponse]);
     } catch (error) {
-      console.error('Error fetching response:', error);
+      console.error('Erreur pendant la réponse :', error);
     } finally {
       setIsFetching(false);
     }
   };
 
-  // Fonction pour commencer l'écoute
   const startListening = () => {
-    if (!mediaRecorder || listening) return;
+    if (!mediaRecorder) {
+      console.warn('Micro non disponible');
+      return;
+    }
+
+    if (listening) {
+      console.warn("L'écoute est déjà active");
+      return;
+    }
+
+    // Arrêter l'audio actif si l'utilisateur commence à parler
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+    }
 
     setListening(true);
     const audioChunks: Blob[] = [];
@@ -162,7 +214,7 @@ export const useDictaphone = () => {
               getResponse({ role: 'user', content: transcription });
             }
           } catch (error) {
-            console.error('Error transcribing audio:', error);
+            console.error('Erreur de transcription :', error);
           }
         }
       };
@@ -170,7 +222,6 @@ export const useDictaphone = () => {
     };
   };
 
-  // Fonction pour arrêter l'écoute
   const stopListening = () => {
     if (mediaRecorder?.state === 'recording') {
       mediaRecorder.stop();
