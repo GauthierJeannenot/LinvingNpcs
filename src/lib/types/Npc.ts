@@ -1,3 +1,4 @@
+import { Npc } from '../api/fetchGamesAndNpcsFromUser';
 import { npcs } from '../data/npc';
 
 interface VoiceType {
@@ -17,3 +18,19 @@ export default interface NpcType {
   voice: VoiceType;
   personae: string;
 }
+
+export const mapFromNpc = (npc: Npc): NpcType => {
+  return {
+    name: npc.name,
+    lastName: npc.lastName,
+    picture: npc.picture,
+    connections: [],
+    voice: {
+      name: npc.voiceName,
+      rate: npc.voiceRate as VoiceType['rate'],
+      pitch: npc.voicePitch as VoiceType['pitch'],
+      style: npc.voiceStyle,
+    },
+    personae: npc.personae,
+  };
+};
