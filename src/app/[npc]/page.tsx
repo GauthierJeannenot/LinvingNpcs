@@ -12,19 +12,19 @@ export default function Npc() {
 
   const [npc, setNpc] = useState<Npc | null>(null);
   console.log(gameData);
-  const game = gameData.find((game) => {
-    game.gameId === 1;
-  });
-  console.log(game);
-  if (game) {
-    const npcData = game.npcs.find((npc) => {
-      npc.name === param.npc;
+  useEffect(() => {
+    const game = gameData.find((game) => {
+      return game.gameId === 1;
     });
-    console.log(npcData);
-    if (npcData) {
-      setNpc(npcData);
+    if (game) {
+      const npcData = game.npcs.find((npc) => {
+        return npc.name === param.npc;
+      });
+      if (npcData) {
+        setNpc(npcData);
+      }
     }
-  }
+  }, [param.npc, gameData]);
 
   if (npc === null) return;
 
