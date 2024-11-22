@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { getAzureSpeechSynthesis } from '@/lib/api/azureSpeech';
-import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt';
-import Npc from '@/lib/types/Npc';
+import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt'; // Assurez-vous que transcribeAudioBase64 existe
 import { Message, Messages } from '@/lib/types/Messages';
 import Meyda from 'meyda';
-import { npcs } from '../data/npc';
-import { useParams, useRouter } from 'next/navigation';
+import { Npc } from '../api/fetchGamesAndNpcsFromUser';
 
 export const useDictaphone = () => {
   const router = useRouter();
@@ -109,7 +107,12 @@ export const useDictaphone = () => {
 
       const base64AudioResponse = await getAzureSpeechSynthesis(
         textResponse.content,
-        currentNpc.voice,
+        {
+          name: npc.voiceName,
+          rate: npc.voiceRate,
+          pitch: npc.voicePitch,
+          style: npc.voiceStyle,
+        },
       );
       const audio = new Audio(base64AudioResponse);
 

@@ -1,21 +1,30 @@
 'use client';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import NpcType from '@/lib/types/Npc';
 import { Dictaphone } from '@/ui/Dictaphone';
-import { npcs } from '@/lib/data/npc';
+import { NpcCard } from '@/ui/NpcCard';
+import { Npc } from '@/lib/api/fetchGamesAndNpcsFromUser';
+import { useAppContext } from '@/lib/context/AppContext';
 
 export default function Npc() {
   const param = useParams();
+  const { gameData } = useAppContext();
 
-  const [npc, setNpc] = useState<NpcType | null>(null);
-
+  const [npc, setNpc] = useState<Npc | null>(null);
+  console.log(gameData);
   useEffect(() => {
-    const response = npcs.find((npc) => npc.name === param.npc);
-    if (response) {
-      setNpc(response);
+    const game = gameData.find((game) => {
+      return game.gameId === 1;
+    });
+    if (game) {
+      const npcData = game.npcs.find((npc) => {
+        return npc.name === param.npc;
+      });
+      if (npcData) {
+        setNpc(npcData);
+      }
     }
-  }, [param.npc]);
+  }, [param.npc, gameData]);
 
   if (npc === null) return;
 
