@@ -3,9 +3,7 @@ import { getAzureSpeechSynthesis } from '@/lib/api/azureSpeech';
 import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt'; // Assurez-vous que transcribeAudioBase64 existe
 import { Message, Messages } from '@/lib/types/Messages';
 import Meyda from 'meyda';
-import { mapFromNpcType, Npc } from '../api/fetchGamesAndNpcsFromUser';
-import { useParams, useRouter } from 'next/navigation';
-import { npcs } from '../data/npc';
+import { Npc } from '../api/fetchGamesAndNpcsFromUser';
 
 export const useDictaphone = () => {
   const router = useRouter();
@@ -39,12 +37,12 @@ export const useDictaphone = () => {
     if (npcName) {
       const matchedNpc = npcs.find((npc) => npc.name === npcName);
       if (matchedNpc) {
-        setCurrentNpc(mapFromNpcType(matchedNpc));
+        setCurrentNpc(matchedNpc);
         setMessages([]); // Réinitialise les messages pour le nouveau PNJ
 
         // Le PNJ salue automatiquement (uniquement si ce n'est pas déjà fait)
         if (!hasGreetedRef.current) {
-          greetNpc(mapFromNpcType(matchedNpc));
+          greetNpc(matchedNpc);
           hasGreetedRef.current = true; // Marque que le PNJ a salué
         }
       }
@@ -64,12 +62,7 @@ export const useDictaphone = () => {
       if (textResponse) {
         const base64AudioResponse = await getAzureSpeechSynthesis(
           textResponse.content,
-          {
-            name: npc.voiceName,
-            rate: npc.voiceRate,
-            pitch: npc.voicePitch,
-            style: npc.voiceStyle,
-          },
+          npc.voice,
         );
         const audio = new Audio(base64AudioResponse);
 
@@ -115,10 +108,10 @@ export const useDictaphone = () => {
       const base64AudioResponse = await getAzureSpeechSynthesis(
         textResponse.content,
         {
-          name: currentNpc.voiceName,
-          rate: currentNpc.voiceRate,
-          pitch: currentNpc.voicePitch,
-          style: currentNpc.voiceStyle,
+          name: npc.voiceName,
+          rate: npc.voiceRate,
+          pitch: npc.voicePitch,
+          style: npc.voiceStyle,
         },
       );
       const audio = new Audio(base64AudioResponse);
