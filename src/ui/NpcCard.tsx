@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import Npc from '@/lib/types/Npc';
 import { useIsSmallScreen } from '@/lib/utils/useIsSmallScreen';
+import { Npc } from '@/lib/api/fetchGamesAndNpcsFromUser';
 
 export const NpcCard = ({ npc }: { npc: Npc }) => {
   const isSmallScreen = useIsSmallScreen();

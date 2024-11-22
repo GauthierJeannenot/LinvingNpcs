@@ -10,6 +10,7 @@ import { supabase } from './supabase';
 // You'll need to import and pass this
 // to `NextAuth` in `app/api/auth/[...nextauth]/route.ts`
 export const config = {
+  secret: process.env.AUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -27,14 +28,37 @@ export const config = {
 
       if (error && error.code === 'PGRST116') {
         // User doesn't exist in Supabase, so create a new entry
+        const now = new Date()
         await supabase.from('User').insert([
           {
-            email: user.email,
+            created_at: now.toLocaleString(),
+            email: user.email!,
           },
         ]);
       }
       return true;
     },
+
+    async session({ session }) {
+      // Send properties to the client, like an access_token and user id from a provider.
+        const userEmail = session.user.email
+
+        const { data, error } = await supabase
+          .from('User')
+          .select('id')
+          .eq('email', userEmail || "")
+          .single()
+        
+          if (error) {
+            console.error('Error fetching user ID:', error);
+            throw new Error('Failed to fetch user ID.');
+          }
+  
+          // Add `id` to the session user object
+          if (session.user) session.user.id = data?.id;
+
+      return session
+    }
 
   },
 } satisfies NextAuthOptions;

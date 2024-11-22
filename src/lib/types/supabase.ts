@@ -27,21 +27,21 @@ export type Database = {
       game_npc: {
         Row: {
           created_at: string
-          gameId: number | null
+          gameId: number
           id: number
-          npcId: number | null
+          npcId: number
         }
         Insert: {
           created_at?: string
-          gameId?: number | null
+          gameId?: number
           id?: number
-          npcId?: number | null
+          npcId?: number
         }
         Update: {
           created_at?: string
-          gameId?: number | null
+          gameId?: number
           id?: number
-          npcId?: number | null
+          npcId?: number
         }
         Relationships: [
           {
@@ -64,55 +64,55 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          lastName: string | null
-          name: string | null
-          personae: string | null
-          picture: string | null
-          voiceName: string | null
-          voicePitch: string | null
-          voiceRate: string | null
-          voiceStyle: string | null
+          lastName: string
+          name: string
+          personae: string
+          picture: string
+          voiceName: string
+          voicePitch: string
+          voiceRate: string
+          voiceStyle: string
         }
         Insert: {
           created_at?: string
           id?: number
-          lastName?: string | null
-          name?: string | null
-          personae?: string | null
-          picture?: string | null
-          voiceName?: string | null
-          voicePitch?: string | null
-          voiceRate?: string | null
-          voiceStyle?: string | null
+          lastName?: string
+          name?: string
+          personae?: string
+          picture?: string
+          voiceName?: string
+          voicePitch?: string
+          voiceRate?: string
+          voiceStyle?: string
         }
         Update: {
           created_at?: string
           id?: number
-          lastName?: string | null
-          name?: string | null
-          personae?: string | null
-          picture?: string | null
-          voiceName?: string | null
-          voicePitch?: string | null
-          voiceRate?: string | null
-          voiceStyle?: string | null
+          lastName?: string
+          name?: string
+          personae?: string
+          picture?: string
+          voiceName?: string
+          voicePitch?: string
+          voiceRate?: string
+          voiceStyle?: string
         }
         Relationships: []
       }
       User: {
         Row: {
           created_at: string
-          email: string | null
+          email: string
           id: number
         }
         Insert: {
           created_at?: string
-          email?: string | null
+          email?: string
           id?: number
         }
         Update: {
           created_at?: string
-          email?: string | null
+          email?: string
           id?: number
         }
         Relationships: []

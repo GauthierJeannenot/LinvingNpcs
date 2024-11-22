@@ -3,7 +3,7 @@ import { fetchUser } from '../api/fetchUser';
 import { User } from '../api/fetchUser';
 
 export const useUser = (email: string) => {
-  const [user, setUser] = useState<User>();
+  const [user, setUser] = useState<User[]>([]);
   useEffect(() => {
     const fetchData = async () => {
       setUser(await fetchUser(email));

@@ -2,49 +2,64 @@
 
 import { supabase } from '../supabase';
 
-type Npc = {
+
+export type Npc = {
+  created_at: string;
   id: number;
-  name: string | null;
+  name: string;
+  lastName: string;
+  picture: string;
+  voiceName: string;
+  voiceRate: string;
+  voicePitch: string;
+  voiceStyle: string;
+  personae: string;
 };
 
 export type GameData = {
-  gameId: number | null; 
-  npcs: Npc[]; 
+  gameId: number | null;
+  npcs: Npc[];
 };
 
 export const fetchGamesAndNpcsFromUser = async (
-  id: number
+  userId: number
 ): Promise<GameData[]> => {
   const { data, error } = await supabase
-  .from('user_game')
-  .select(`
-    gameId,
-    Game (
-      id,
-      game_npc (
-        npcId,
-        Npc (
-          id,
-          name
+    .from('user_game')
+    .select(`
+      gameId,
+      Game (
+        game_npc (
+          Npc (*)
         )
       )
-    )
-  `).eq('userId', id);
+    `)
+    .eq('userId', userId);
 
   if (error) {
+    console.error('Error fetching games and NPCs:', error);
     throw error;
   }
 
-  return (
-    data.map((item) => {
-      const gameId = item.gameId;
-      const npcs =
-        item.Game?.game_npc.map((npc) => ({
-          id: npc.Npc?.id ?? 0, // Default to 0 if undefined
-          name: npc.Npc?.name ?? null, // Default to null if undefined
-        })) || [];
+  if (!data) return [];
 
-      return { gameId, npcs };
-    }) || []
-  ); // Default to an empty array if data is null
+  return data.map((item) => {
+    const gameId = item.gameId;
+
+    const npcs: Npc[] =
+      item.Game?.game_npc.map((gameNpc) => ({
+        created_at: gameNpc.Npc?.created_at || "",
+        id: gameNpc.Npc?.id || 0,
+        name: gameNpc.Npc?.name || "",
+        lastName: gameNpc.Npc?.lastName || "",
+        picture: gameNpc.Npc?.picture || "",
+        voiceName: gameNpc.Npc?.voiceName || "",
+        voiceRate: gameNpc.Npc?.voiceRate || "",
+        voicePitch: gameNpc.Npc?.voicePitch || "",
+        voiceStyle: gameNpc.Npc?.voiceStyle || "",
+        personae: gameNpc.Npc?.personae || "",
+      })) || [];
+
+    return { gameId, npcs };
+  });
 };

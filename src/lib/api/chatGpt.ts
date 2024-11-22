@@ -3,8 +3,7 @@
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import OpenAI from 'openai';
 import { Message } from '../types/Messages';
-import Npc from '../types/Npc';
-
+import { Npc } from './fetchGamesAndNpcsFromUser';
 const openai = new OpenAI();
 
 export const askChatGpt = async (npc: Npc, messages: Message[]) => {
