@@ -2,7 +2,6 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Dictaphone } from '@/ui/Dictaphone';
-import { NpcCard } from '@/ui/NpcCard';
 import { Npc } from '@/lib/api/fetchGamesAndNpcsFromUser';
 import { useAppContext } from '@/lib/context/AppContext';
 
