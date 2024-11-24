@@ -4,6 +4,7 @@ import { askChatGpt, transcribeAudioBase64 } from '@/lib/api/chatGpt'; // Assure
 import { Message, Messages } from '@/lib/types/Messages';
 import Meyda from 'meyda';
 import { Npc } from '../api/fetchGamesAndNpcsFromUser';
+import { useParams, useRouter } from 'next/navigation';
 
 export const useDictaphone = () => {
   const router = useRouter();
