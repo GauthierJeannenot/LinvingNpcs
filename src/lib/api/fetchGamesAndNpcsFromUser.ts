@@ -14,7 +14,7 @@ export type Npc = {
   voicePitch: string;
   voiceStyle: string;
   personae: string;
-  relatedNpcsNames: string[]
+  relatedNpcsNames: string[] | number[]
 };
 
 export type GameData = {
@@ -26,21 +26,22 @@ export const fetchGamesAndNpcsFromUser = async (
   userId: number
 ): Promise<GameData[]> => {
   const { data, error } = await supabase
-    .from('user_game')
-    .select(`
-    gameId,
-    Game (
-      game_npc (
-        Npc (
-          *,
-          relatedNpc (
-            relatedNpcID
-          )
+  .from('user_game')
+  .select(`
+  gameId,
+  Game (
+    game_npc (
+      Npc (
+        *,
+        relatedNpc!relatedNpc_npcId_fkey (
+          relatedNpcID
         )
       )
     )
-  `)
-    .eq('userId', userId);
+  )
+`,
+  )
+  .eq('userId', userId);
 
   if (error) {
     console.error('Error fetching games and NPCs:', error);

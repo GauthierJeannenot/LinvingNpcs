@@ -27,9 +27,8 @@ export default async function RootLayout({
       ) : (
         <body className="bg-gray-900 text-gray-100">
           <div className="flex h-screen">
-            <LeftMenu />
             <div className="flex-grow h-full bg-gray-850 shadow-inner p-4 overflow-y-hidden">
-              {children}
+              <a href="/api/auth/signin">Please Log in</a>
             </div>
           </div>
         </body>
