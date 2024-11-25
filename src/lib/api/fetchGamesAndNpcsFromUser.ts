@@ -14,6 +14,7 @@ export type Npc = {
   voicePitch: string;
   voiceStyle: string;
   personae: string;
+  relatedNpcsNames: string[]
 };
 
 export type GameData = {
@@ -27,13 +28,18 @@ export const fetchGamesAndNpcsFromUser = async (
   const { data, error } = await supabase
     .from('user_game')
     .select(`
-      gameId,
-      Game (
-        game_npc (
-          Npc (*)
+    gameId,
+    Game (
+      game_npc (
+        Npc (
+          *,
+          relatedNpc (
+            relatedNpcID
+          )
         )
       )
-    `)
+    )
+  `)
     .eq('userId', userId);
 
   if (error) {
@@ -43,23 +49,51 @@ export const fetchGamesAndNpcsFromUser = async (
 
   if (!data) return [];
 
-  return data.map((item) => {
-    const gameId = item.gameId;
+  
 
-    const npcs: Npc[] =
-      item.Game?.game_npc.map((gameNpc) => ({
-        created_at: gameNpc.Npc?.created_at || "",
-        id: gameNpc.Npc?.id || 0,
-        name: gameNpc.Npc?.name || "",
-        lastName: gameNpc.Npc?.lastName || "",
-        picture: gameNpc.Npc?.picture || "",
-        voiceName: gameNpc.Npc?.voiceName || "",
-        voiceRate: gameNpc.Npc?.voiceRate || "",
-        voicePitch: gameNpc.Npc?.voicePitch || "",
-        voiceStyle: gameNpc.Npc?.voiceStyle || "",
-        personae: gameNpc.Npc?.personae || "",
-      })) || [];
 
-    return { gameId, npcs };
-  });
+
+
+  const transformedData = await Promise.all(
+    data.map(async (item) => {
+      const gameId = item.gameId;
+  
+      const npcs: Npc[] = await Promise.all(
+        item.Game?.game_npc.map(async (gameNpc) => {
+          const relatedNpcIds = gameNpc.Npc?.relatedNpc.map(r => r.relatedNpcID) || [];
+  
+          // Fetch related NPC names
+          const { data: relatedNpcs, error: relatedError } = await supabase
+            .from('Npc')
+            .select('name')
+            .in('id', relatedNpcIds);
+  
+          if (relatedError) {
+            console.error('Error fetching related NPC names:', relatedError);
+          }
+  
+          const relatedNpcsNames = relatedNpcs?.map(r => r.name) || [];
+  
+          return {
+            created_at: gameNpc.Npc?.created_at || "",
+            id: gameNpc.Npc?.id || 0,
+            name: gameNpc.Npc?.name || "",
+            lastName: gameNpc.Npc?.lastName || "",
+            picture: gameNpc.Npc?.picture || "",
+            voiceName: gameNpc.Npc?.voiceName || "",
+            voiceRate: gameNpc.Npc?.voiceRate || "",
+            voicePitch: gameNpc.Npc?.voicePitch || "",
+            voiceStyle: gameNpc.Npc?.voiceStyle || "",
+            personae: gameNpc.Npc?.personae || "",
+            relatedNpcsNames,
+          };
+        }) || []
+      );
+  
+      return { gameId, npcs };
+    })
+  );
+
+  return transformedData
+
 };

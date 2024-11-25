@@ -99,6 +99,36 @@ export type Database = {
         }
         Relationships: []
       }
+      relatedNpc: {
+        Row: {
+          npcId: number
+          relatedNpcID: number
+        }
+        Insert: {
+          npcId: number
+          relatedNpcID: number
+        }
+        Update: {
+          npcId?: number
+          relatedNpcID?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relatedNpc_npcId_fkey"
+            columns: ["npcId"]
+            isOneToOne: false
+            referencedRelation: "Npc"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relatedNpc_relatedNpcID_fkey"
+            columns: ["relatedNpcID"]
+            isOneToOne: false
+            referencedRelation: "Npc"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       User: {
         Row: {
           created_at: string

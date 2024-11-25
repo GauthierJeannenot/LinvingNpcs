@@ -5,6 +5,7 @@ import { Message, Messages } from '@/lib/types/Messages';
 import Meyda from 'meyda';
 import { Npc } from '../api/fetchGamesAndNpcsFromUser';
 import { useParams, useRouter } from 'next/navigation';
+import { useAppContext } from '../context/AppContext';
 
 export const useDictaphone = () => {
   const router = useRouter();
@@ -19,7 +20,7 @@ export const useDictaphone = () => {
   );
   const activeAudioRef = useRef<HTMLAudioElement | null>(null); // Référence pour l'Audio actif
   const hasGreetedRef = useRef(false); // Indique si le PNJ a déjà parlé après redirection
-
+  const { gameData } = useAppContext();
   useEffect(() => {
     if (navigator.mediaDevices) {
       navigator.mediaDevices
@@ -36,14 +37,15 @@ export const useDictaphone = () => {
 
   useEffect(() => {
     if (npcName) {
-      const matchedNpc = npcs.find((npc) => npc.name === npcName);
-      if (matchedNpc) {
-        setCurrentNpc(matchedNpc);
+      const game = gameData.find((game) => game.gameId === 1);
+      const npc = game?.npcs.find((npc) => npc.name === npcName);
+      if (npc) {
+        setCurrentNpc(npc);
         setMessages([]); // Réinitialise les messages pour le nouveau PNJ
 
         // Le PNJ salue automatiquement (uniquement si ce n'est pas déjà fait)
         if (!hasGreetedRef.current) {
-          greetNpc(matchedNpc);
+          greetNpc(npc);
           hasGreetedRef.current = true; // Marque que le PNJ a salué
         }
       }
@@ -63,7 +65,12 @@ export const useDictaphone = () => {
       if (textResponse) {
         const base64AudioResponse = await getAzureSpeechSynthesis(
           textResponse.content,
-          npc.voice,
+          {
+            name: npc.voiceName,
+            pitch: npc.voicePitch,
+            rate: npc.voiceRate,
+            style: npc.voiceStyle,
+          },
         );
         const audio = new Audio(base64AudioResponse);
 
@@ -102,17 +109,17 @@ export const useDictaphone = () => {
 
       if (!textResponse) throw new Error("Impossible d'obtenir une réponse");
 
-      const npcMentioned = currentNpc.connections.find((name) =>
+      const npcMentioned = currentNpc.relatedNpcsNames.find((name) =>
         textResponse.content.includes(name),
       );
 
       const base64AudioResponse = await getAzureSpeechSynthesis(
         textResponse.content,
         {
-          name: npc.voiceName,
-          rate: npc.voiceRate,
-          pitch: npc.voicePitch,
-          style: npc.voiceStyle,
+          name: currentNpc.voiceName,
+          rate: currentNpc.voiceRate,
+          pitch: currentNpc.voicePitch,
+          style: currentNpc.voiceStyle,
         },
       );
       const audio = new Audio(base64AudioResponse);
