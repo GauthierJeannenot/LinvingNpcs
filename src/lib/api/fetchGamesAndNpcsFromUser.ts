@@ -14,7 +14,7 @@ export type Npc = {
   voicePitch: string;
   voiceStyle: string;
   personae: string;
-  relatedNpcsNames: string[] | number[]
+  relatedNpcsNames: string[]
 };
 
 export type GameData = {
