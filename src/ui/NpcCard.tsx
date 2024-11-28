@@ -15,6 +15,7 @@ export const NpcCard = ({ npc }: { npc: Npc }) => {
       }
     >
       <Image
+        priority
         src={npc.picture}
         width={150}
         height={150}

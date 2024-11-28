@@ -37,6 +37,7 @@ export const LeftMenu = () => {
                         className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-lg transition-all"
                       >
                         <Image
+                          priority
                           src={npc.picture}
                           alt={npc.name}
                           className="rounded-full object-cover"

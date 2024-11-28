@@ -6,6 +6,7 @@ import Meyda from 'meyda';
 import { Npc } from '../api/fetchGamesAndNpcsFromUser';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
+import { handleNPCResponse } from '../handlers/npcManager';
 
 export const useDictaphone = () => {
   const router = useRouter();
@@ -61,10 +62,11 @@ export const useDictaphone = () => {
     setIsFetching(true);
     try {
       const textResponse = await askChatGpt(npc, [greetingMessage]);
+      handleNPCResponse(textResponse, hasGreetedRef, router);
 
       if (textResponse) {
         const base64AudioResponse = await getAzureSpeechSynthesis(
-          textResponse.content,
+          textResponse.message,
           {
             name: npc.voiceName,
             pitch: npc.voicePitch,
@@ -78,7 +80,7 @@ export const useDictaphone = () => {
         activeAudioRef.current = audio;
 
         audio.play();
-        setMessages([{ role: 'assistant', content: textResponse.content }]);
+        setMessages([{ role: 'assistant', content: textResponse.message }]);
 
         audio.addEventListener('ended', () => {
           activeAudioRef.current = null; // Réinitialiser après la fin de la lecture
@@ -101,7 +103,10 @@ export const useDictaphone = () => {
     }
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setIsFetching(true); // Indique que la requête est en cours
+
     try {
+      // Obtenir une réponse de ChatGPT
       const textResponse = await askChatGpt(currentNpc, [
         ...messages,
         newMessage,
@@ -109,12 +114,9 @@ export const useDictaphone = () => {
 
       if (!textResponse) throw new Error("Impossible d'obtenir une réponse");
 
-      const npcMentioned = currentNpc.relatedNpcsNames.find((name) =>
-        textResponse.content.includes(name),
-      );
-
+      // Synthèse vocale de la réponse du NPC
       const base64AudioResponse = await getAzureSpeechSynthesis(
-        textResponse.content,
+        textResponse.message,
         {
           name: currentNpc.voiceName,
           rate: currentNpc.voiceRate,
@@ -122,27 +124,27 @@ export const useDictaphone = () => {
           style: currentNpc.voiceStyle,
         },
       );
+
       const audio = new Audio(base64AudioResponse);
-
-      // Stocker l'instance Audio
-      activeAudioRef.current = audio;
-
+      activeAudioRef.current = audio; // Stocker l'instance Audio
       audio.play();
 
       // Rediriger vers le prochain NPC après la lecture audio
       audio.addEventListener('ended', () => {
+        // Traiter la réponse avec le gestionnaire principal
+        handleNPCResponse(textResponse, hasGreetedRef, router);
         activeAudioRef.current = null; // Réinitialiser après lecture
-        if (npcMentioned) {
-          hasGreetedRef.current = false; // Reset pour le prochain PNJ
-          router.push(`/${npcMentioned}`);
-        }
       });
 
-      setMessages((prevMessages) => [...prevMessages, textResponse]);
+      // Ajouter la réponse du NPC aux messages
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { content: textResponse.message, role: 'assistant' },
+      ]);
     } catch (error) {
       console.error('Erreur pendant la réponse :', error);
     } finally {
-      setIsFetching(false);
+      setIsFetching(false); // Fin de la requête
     }
   };
 
