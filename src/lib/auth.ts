@@ -19,12 +19,12 @@ export const config = {
   ],
   callbacks: {
     async signIn({ user }) {
-      const { data, error } = await supabase
+      const createUser = async() => {
+        const { error } = await supabase
         .from('User')
         .select('id')
         .eq('email', user.email || "")
         .single();
-      console.log(data);
 
       if (error && error.code === 'PGRST116') {
         // User doesn't exist in Supabase, so create a new entry
@@ -36,6 +36,41 @@ export const config = {
           },
         ]);
       }
+      }
+      await createUser()
+
+      const addTestGameToUser = async() => {
+        const { data } = await supabase
+          .from('User')
+          .select('id')
+          .eq('email', user.email!)
+          .single()
+        
+
+        const userId = data?.id
+        
+        if (userId) {
+          const { data } = await supabase
+            .from('user_game')
+            .select('gameId')
+            .eq('userId', userId)
+          if (data?.length === 0) {
+            console.log('la !')
+            await supabase
+              .from('user_game')
+              .insert({
+                userId: userId,
+                gameId: 1,
+                created_at: new Date().toLocaleString()
+              })
+          }
+        }
+        
+      }
+      
+      await addTestGameToUser()
+      
+
       return true;
     },
 
