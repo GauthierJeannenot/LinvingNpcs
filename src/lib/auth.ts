@@ -55,7 +55,6 @@ export const config = {
             .select('gameId')
             .eq('userId', userId)
           if (data?.length === 0) {
-            console.log('la !')
             await supabase
               .from('user_game')
               .insert({

@@ -19,6 +19,7 @@ export type Npc = {
 
 export type GameData = {
   gameId: number | null;
+  gameName: string
   npcs: Npc[];
 };
 
@@ -30,6 +31,7 @@ export const fetchGamesAndNpcsFromUser = async (
   .select(`
   gameId,
   Game (
+    name,
     game_npc (
       Npc (
         *,
@@ -55,9 +57,10 @@ export const fetchGamesAndNpcsFromUser = async (
 
 
 
-  const transformedData = await Promise.all(
+  const transformedData: GameData[] = await Promise.all(
     data.map(async (item) => {
       const gameId = item.gameId;
+      const gameName = item.Game?.name.replace(' ', '_') || ""
   
       const npcs: Npc[] = await Promise.all(
         item.Game?.game_npc.map(async (gameNpc) => {
@@ -91,7 +94,7 @@ export const fetchGamesAndNpcsFromUser = async (
         }) || []
       );
   
-      return { gameId, npcs };
+      return { gameId, gameName, npcs };
     })
   );
 

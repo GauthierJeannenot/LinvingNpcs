@@ -13,7 +13,7 @@ export default function Npc() {
   console.log(gameData);
   useEffect(() => {
     const game = gameData.find((game) => {
-      return game.gameId === 1;
+      return game.gameName === param.game;
     });
     if (game) {
       const npcData = game.npcs.find((npc) => {
